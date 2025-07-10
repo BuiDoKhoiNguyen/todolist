@@ -1,5 +1,3 @@
-![Database Diagram](screenshots/database_diagrame.png)
-
 ## API Documentation
 
 ### Authentication APIs
@@ -76,23 +74,53 @@
 - **ROLE_ADMIN**: Quản lý users, có quyền truy cập tất cả endpoints
 - **ROLE_USER**: Quản lý tasks, categories, tags, comments của mình
 
-## Screenshots
+## System Architecture & Workflows
 
-![Home Page](screenshots/Screenshot%202025-07-10%20at%2015.38.28.png)
+### Database Design
 
-![Login Page](screenshots/Screenshot%202025-07-10%20at%2015.38.40.png)
+![Database Diagram](screenshots/database_diagrame.png)
 
-![Dashboard](screenshots/Screenshot%202025-07-10%20at%2015.38.47.png)
+### Authentication Flow
 
-![Task List](screenshots/Screenshot%202025-07-10%20at%2015.38.54.png)
+![Authentication Flow](screenshots/authentication_flow.png)
 
-![Task Details](screenshots/Screenshot%202025-07-10%20at%2015.39.01.png)
+**Workflow bao gồm:**
 
-![User Management](screenshots/Screenshot%202025-07-10%20at%2015.39.07.png)
+- User Registration với email verification
+- JWT-based Authentication
+- Role-based Authorization
+- Password reset functionality
 
-![Admin Panel](screenshots/Screenshot%202025-07-10%20at%2015.39.14.png)
+### Task Management Flow
 
-![Configuration](screenshots/Screenshot%202025-07-10%20at%2015.39.24.png)
+![Task Management Flow](screenshots/task_management_flow.png)
+
+**Các chức năng chính:**
+
+- CRUD operations cho Tasks
+- Search và filter theo status, priority
+- Pagination support
+- User-specific task management
+
+### Subtask Management Flow
+
+![Subtask Management Flow](screenshots/subtask_management_flow.png)
+
+**Tính năng:**
+
+- Tạo subtasks liên kết với parent task
+- Quản lý status cho từng subtask
+- Cascade operations với parent task
+
+### Comment Management Flow
+
+![Comment Management Flow](screenshots/comment_management_flow.png)
+
+**Chức năng:**
+
+- Thêm comments cho tasks
+- User authentication cho comments
+- Thread discussions trên tasks
 
 ## Business Logic
 
