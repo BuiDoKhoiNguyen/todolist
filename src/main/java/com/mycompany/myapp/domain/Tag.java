@@ -12,10 +12,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "tag")
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Tag extends AbstractAuditingEntity<Long> implements Serializable {
-
-    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
