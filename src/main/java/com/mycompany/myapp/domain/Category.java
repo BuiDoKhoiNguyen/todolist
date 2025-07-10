@@ -1,9 +1,12 @@
 package com.mycompany.myapp.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -27,4 +30,9 @@ public class Category extends AbstractAuditingEntity<Long> implements Serializab
 
     @Column(name = "description", length = 500)
     private String description;
+
+    // Category 1:N Task
+    @OneToMany(mappedBy = "category")
+    @JsonIgnoreProperties(value = { "category", "assignedUser", "subtasks", "comments", "tags" }, allowSetters = true)
+    private Set<Task> tasks = new HashSet<>();
 }

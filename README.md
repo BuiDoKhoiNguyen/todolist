@@ -1,242 +1,333 @@
-# todolist
+# TodoList Application - Spring Boot & JHipster
 
-This application was generated using JHipster 8.11.0, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.11.0](https://www.jhipster.tech/documentation-archive/v8.11.0).
+Ứng dụng quản lý công việc (TodoList) được xây dựng bằng Spring Boot và JHipster, hỗ trợ quản lý tasks, categories, tags, subtasks và comments với hệ thống phân quyền user/admin.
 
-## Project Structure
+## 🏗️ Kiến trúc Database
 
-Node is required for generation and recommended for development. `package.json` is always generated for a better development experience with prettier, commit hooks, scripts and so on.
+### Entity Relationship Diagram
 
-In the project root, JHipster generates configuration files for tools like git, prettier, eslint, husky, and others that are well known and you can find references in the web.
+```mermaid
+erDiagram
+    USER ||--o{ TASK : creates
+    USER ||--o{ COMMENT : writes
 
-`/src/*` structure follows default Java structure.
+    TASK ||--o{ SUBTASK : contains
+    TASK ||--o{ COMMENT : has
+    TASK }o--|| CATEGORY : belongs_to
+    TASK }o--o{ TAG : tagged_with
 
-- `.yo-rc.json` - Yeoman configuration file
-  JHipster configuration is stored in this file at `generator-jhipster` key. You may find `generator-jhipster-*` for specific blueprints configuration.
-- `.yo-resolve` (optional) - Yeoman conflict resolver
-  Allows to use a specific action when conflicts are found skipping prompts for files that matches a pattern. Each line should match `[pattern] [action]` with pattern been a [Minimatch](https://github.com/isaacs/minimatch#minimatch) pattern and action been one of skip (default if omitted) or force. Lines starting with `#` are considered comments and are ignored.
-- `.jhipster/*.json` - JHipster entity configuration files
+    USER {
+        Long id PK
+        string login UK
+        string password_hash
+        string first_name
+        string last_name
+        string email UK
+        boolean activated
+        string lang_key
+        string image_url
+        timestamp created_date
+        string created_by
+        timestamp last_modified_date
+        string last_modified_by
+    }
 
-- `npmw` - wrapper to use locally installed npm.
-  JHipster installs Node and npm locally using the build tool by default. This wrapper makes sure npm is installed locally and uses it avoiding some differences different versions can cause. By using `./npmw` instead of the traditional `npm` you can configure a Node-less environment to develop or test your application.
-- `/src/main/docker` - Docker configurations for the application and services that the application depends on
+    AUTHORITY {
+        string name PK
+    }
 
-## Development
+    USER_AUTHORITY {
+        Long user_id FK
+        string authority_name FK
+    }
 
-The build system will install automatically the recommended version of Node and npm.
+    TASK {
+        Long id PK
+        string title
+        string description
+        TodoStatus status
+        TodoPriority priority
+        timestamp due_date
+        timestamp created_date
+        string created_by
+        timestamp last_modified_date
+        string last_modified_by
+    }
 
-We provide a wrapper to launch npm.
-You will only need to run this command when dependencies change in [package.json](package.json).
+    CATEGORY {
+        Long id PK
+        string name UK
+        string description
+        timestamp created_date
+        string created_by
+        timestamp last_modified_date
+        string last_modified_by
+    }
 
-```
-./npmw install
-```
+    TAG {
+        Long id PK
+        string name UK
+        timestamp created_date
+        string created_by
+        timestamp last_modified_date
+        string last_modified_by
+    }
 
-We use npm scripts and [Webpack][] as our build system.
+    SUBTASK {
+        Long id PK
+        string title
+        TodoStatus status
+        Long task_id FK
+        timestamp created_date
+        string created_by
+        timestamp last_modified_date
+        string last_modified_by
+    }
 
-Run the following commands in two separate terminals to create a blissful development experience where your browser
-auto-refreshes when files change on your hard drive.
+    COMMENT {
+        Long id PK
+        string content
+        Long task_id FK
+        Long user_id FK
+        timestamp created_date
+        string created_by
+        timestamp last_modified_date
+        string last_modified_by
+    }
 
-```
-./mvnw
-./npmw start
-```
-
-Npm is also used to manage CSS and JavaScript dependencies used in this application. You can upgrade dependencies by
-specifying a newer version in [package.json](package.json). You can also run `./npmw update` and `./npmw install` to manage dependencies.
-Add the `help` flag on any command to see how you can use it. For example, `./npmw help update`.
-
-The `./npmw run` command will list all the scripts available to run for this project.
-
-### PWA Support
-
-JHipster ships with PWA (Progressive Web App) support, and it's turned off by default. One of the main components of a PWA is a service worker.
-
-The service worker initialization code is commented out by default. To enable it, uncomment the following code in `src/main/webapp/index.html`:
-
-```html
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').then(function () {
-      console.log('Service Worker Registered');
-    });
-  }
-</script>
-```
-
-Note: [Workbox](https://developers.google.com/web/tools/workbox/) powers JHipster's service worker. It dynamically generates the `service-worker.js` file.
-
-### Managing dependencies
-
-For example, to add [Leaflet][] library as a runtime dependency of your application, you would run following command:
-
-```
-./npmw install --save --save-exact leaflet
-```
-
-To benefit from TypeScript type definitions from [DefinitelyTyped][] repository in development, you would run following command:
-
-```
-./npmw install --save-dev --save-exact @types/leaflet
-```
-
-Then you would import the JS and CSS files specified in library's installation instructions so that [Webpack][] knows about them:
-Note: There are still a few other things remaining to do for Leaflet that we won't detail here.
-
-For further instructions on how to develop with JHipster, have a look at [Using JHipster in development][].
-
-## Building for production
-
-### Packaging as jar
-
-To build the final jar and optimize the todolist application for production, run:
-
-```
-./mvnw -Pprod clean verify
-```
-
-This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
-To ensure everything worked, run:
-
-```
-java -jar target/*.jar
+    USER ||--o{ USER_AUTHORITY : has
+    AUTHORITY ||--o{ USER_AUTHORITY : granted_to
 ```
 
-Then navigate to [http://localhost:8080](http://localhost:8080) in your browser.
+### Enums
 
-Refer to [Using JHipster in production][] for more details.
+- **TodoStatus**: `PENDING`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`
+- **TodoPriority**: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
+- **Authority**: `ROLE_ADMIN`, `ROLE_USER`
 
-### Packaging as war
+## 🔄 Luồng nghiệp vụ chính
 
-To package your application as a war in order to deploy it to an application server, run:
+### 1. Sequence Diagram - API Interactions
 
-```
-./mvnw -Pprod,war clean verify
-```
+```mermaid
+sequenceDiagram
+    participant U as User/Admin
+    participant A as Authentication API
+    participant TC as Task Controller
+    participant CC as Category Controller
+    participant TagC as Tag Controller
+    participant SC as Subtask Controller
+    participant ComC as Comment Controller
+    participant DB as Database
 
-### JHipster Control Center
+    Note over U,DB: 1. Authentication Flow
+    U->>A: POST /api/authenticate<br/>{username, password}
+    A->>DB: Validate credentials
+    DB-->>A: User info + authorities
+    A-->>U: JWT Token + user roles
 
-JHipster Control Center can help you manage and control your application(s). You can start a local control center server (accessible on http://localhost:7419) with:
+    Note over U,DB: 2. Task Management Flow
+    U->>TC: POST /api/tasks<br/>{title, description, priority, dueDate}
+    TC->>DB: Create new task
+    DB-->>TC: Task created with ID
+    TC-->>U: 201 Created + TaskDTO
 
-```
-docker compose -f src/main/docker/jhipster-control-center.yml up
-```
+    U->>TC: GET /api/tasks
+    TC->>DB: Fetch all tasks
+    DB-->>TC: List of tasks
+    TC-->>U: 200 OK + TaskDTO[]
 
-## Testing
+    U->>TC: PUT /api/tasks/{id}<br/>{updated task data}
+    TC->>DB: Update task
+    DB-->>TC: Task updated
+    TC-->>U: 200 OK + TaskDTO
 
-### Spring Boot tests
+    Note over U,DB: 3. Category Management Flow
+    U->>CC: POST /api/categories<br/>{name, description}
+    CC->>DB: Create category
+    DB-->>CC: Category created
+    CC-->>U: 201 Created + CategoryDTO
 
-To launch your application's tests, run:
+    U->>CC: GET /api/categories
+    CC->>DB: Fetch all categories
+    DB-->>CC: List of categories
+    CC-->>U: 200 OK + CategoryDTO[]
 
-```
-./mvnw verify
-```
+    Note over U,DB: 4. Subtask Management Flow
+    U->>SC: POST /api/subtasks<br/>{title, taskId, status}
+    SC->>DB: Create subtask
+    DB-->>SC: Subtask created
+    SC-->>U: 201 Created + SubtaskDTO
 
-### Client tests
+    U->>SC: GET /api/subtasks/task/{taskId}
+    SC->>DB: Fetch subtasks by task ID
+    DB-->>SC: List of subtasks
+    SC-->>U: 200 OK + SubtaskDTO[]
 
-Unit tests are run by [Jest][]. They're located near components and can be run with:
+    Note over U,DB: 5. Comment Management Flow
+    U->>ComC: POST /api/comments<br/>{content, taskId, userId}
+    ComC->>DB: Create comment
+    DB-->>ComC: Comment created
+    ComC-->>U: 201 Created + CommentDTO
 
-```
-./npmw test
-```
-
-## Others
-
-### Code quality using Sonar
-
-Sonar is used to analyse code quality. You can start a local Sonar server (accessible on http://localhost:9001) with:
-
-```
-docker compose -f src/main/docker/sonar.yml up -d
-```
-
-Note: we have turned off forced authentication redirect for UI in [src/main/docker/sonar.yml](src/main/docker/sonar.yml) for out of the box experience while trying out SonarQube, for real use cases turn it back on.
-
-You can run a Sonar analysis with using the [sonar-scanner](https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner) or by using the maven plugin.
-
-Then, run a Sonar analysis:
-
-```
-./mvnw -Pprod clean verify sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-If you need to re-run the Sonar phase, please be sure to specify at least the `initialize` phase since Sonar properties are loaded from the sonar-project.properties file.
-
-```
-./mvnw initialize sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-Additionally, Instead of passing `sonar.password` and `sonar.login` as CLI arguments, these parameters can be configured from [sonar-project.properties](sonar-project.properties) as shown below:
-
-```
-sonar.login=admin
-sonar.password=admin
-```
-
-For more information, refer to the [Code quality page][].
-
-### Docker Compose support
-
-JHipster generates a number of Docker Compose configuration files in the [src/main/docker/](src/main/docker/) folder to launch required third party services.
-
-For example, to start required services in Docker containers, run:
-
-```
-docker compose -f src/main/docker/services.yml up -d
+    U->>ComC: GET /api/comments/task/{taskId}
+    ComC->>DB: Fetch comments by task ID
+    DB-->>ComC: List of comments
+    ComC-->>U: 200 OK + CommentDTO[]
 ```
 
-To stop and remove the containers, run:
+### 2. Business Flow Diagram
 
+```mermaid
+graph TD
+    A[User Login] --> B{Authentication}
+    B -->|Success| C[Get JWT Token]
+    B -->|Fail| D[Login Error]
+
+    C --> E[Access APIs]
+
+    E --> F[Task Management]
+    E --> G[Category Management]
+    E --> H[Tag Management]
+    E --> I[User Management]
+
+    F --> F1["Create Task POST /api/tasks"]
+    F --> F2["View Tasks GET /api/tasks"]
+    F --> F3["Update Task PUT /api/tasks/{id}"]
+    F --> F4["Delete Task DELETE /api/tasks/{id}"]
+    F --> F5["Search Tasks GET /api/tasks/search"]
+    F --> F6["Filter by Status GET /api/tasks/status/{status}"]
+    F --> F7["Filter by Priority GET /api/tasks/priority/{priority}"]
+    F --> F8["View Overdue Tasks GET /api/tasks/overdue"]
+    F --> F9["My Tasks GET /api/tasks/my-tasks"]
+
+    F1 --> J["Add Subtasks POST /api/subtasks"]
+    F1 --> K["Add Comments POST /api/comments"]
+
+    G --> G1["Create Category POST /api/categories"]
+    G --> G2["View Categories GET /api/categories"]
+    G --> G3["Update Category PUT /api/categories/{id}"]
+    G --> G4["Delete Category DELETE /api/categories/{id}"]
+
+    H --> H1["Create Tag POST /api/tags"]
+    H --> H2["View Tags GET /api/tags"]
+    H --> H3["Update Tag PUT /api/tags/{id}"]
+    H --> H4["Delete Tag DELETE /api/tags/{id}"]
+    H --> H5["Find Tag by Name GET /api/tags/name/{name}"]
+
+    I --> I1{Admin Only}
+    I1 -->|Yes| I2["Manage Users GET /api/admin/users"]
+    I1 -->|Yes| I3["Create User POST /api/admin/users"]
+    I1 -->|Yes| I4["Update User PUT /api/admin/users/{login}"]
+    I1 -->|Yes| I5["Delete User DELETE /api/admin/users/{login}"]
+
+    style A fill:#e1f5fe
+    style C fill:#c8e6c9
+    style D fill:#ffcdd2
+    style I1 fill:#fff3e0
+    style I2 fill:#f3e5f5
+    style I3 fill:#f3e5f5
+    style I4 fill:#f3e5f5
+    style I5 fill:#f3e5f5
 ```
-docker compose -f src/main/docker/services.yml down
-```
 
-[Spring Docker Compose Integration](https://docs.spring.io/spring-boot/reference/features/dev-services.html) is enabled by default. It's possible to disable it in application.yml:
+## 📋 API Documentation
 
-```yaml
-spring:
-  ...
-  docker:
-    compose:
-      enabled: false
-```
+### Authentication APIs
 
-You can also fully dockerize your application and all the services that it depends on.
-To achieve this, first build a Docker image of your app by running:
+| Method | Endpoint                       | Description                      | Request Body                                    |
+| ------ | ------------------------------ | -------------------------------- | ----------------------------------------------- |
+| POST   | `/api/authenticate`            | Đăng nhập hệ thống               | `{username, password, rememberMe}`              |
+| GET    | `/api/authenticate`            | Kiểm tra trạng thái đăng nhập    | -                                               |
+| POST   | `/api/register`                | Đăng ký tài khoản mới            | `{login, email, password, firstName, lastName}` |
+| GET    | `/api/activate`                | Kích hoạt tài khoản              | `?key=activation_key`                           |
+| GET    | `/api/account`                 | Lấy thông tin tài khoản hiện tại | -                                               |
+| POST   | `/api/account`                 | Cập nhật thông tin tài khoản     | `{firstName, lastName, email, langKey}`         |
+| POST   | `/api/account/change-password` | Đổi mật khẩu                     | `{currentPassword, newPassword}`                |
 
-```sh
-npm run java:docker
-```
+### Task Management APIs
 
-Or build a arm64 Docker image when using an arm64 processor os like MacOS with M1 processor family running:
+| Method | Endpoint                         | Description                 | Authorization |
+| ------ | -------------------------------- | --------------------------- | ------------- |
+| POST   | `/api/tasks`                     | Tạo task mới                | User/Admin    |
+| GET    | `/api/tasks`                     | Lấy danh sách tất cả tasks  | User/Admin    |
+| GET    | `/api/tasks/{id}`                | Lấy chi tiết task theo ID   | User/Admin    |
+| PUT    | `/api/tasks/{id}`                | Cập nhật task               | User/Admin    |
+| PATCH  | `/api/tasks/{id}`                | Cập nhật một phần task      | User/Admin    |
+| DELETE | `/api/tasks/{id}`                | Xóa task                    | User/Admin    |
+| GET    | `/api/tasks/status/{status}`     | Lấy tasks theo trạng thái   | User/Admin    |
+| GET    | `/api/tasks/priority/{priority}` | Lấy tasks theo độ ưu tiên   | User/Admin    |
+| GET    | `/api/tasks/overdue`             | Lấy tasks quá hạn           | User/Admin    |
+| GET    | `/api/tasks/search`              | Tìm kiếm tasks theo title   | User/Admin    |
+| GET    | `/api/tasks/my-tasks`            | Lấy tasks của user hiện tại | User/Admin    |
 
-```sh
-npm run java:docker:arm64
-```
+### Category Management APIs
 
-Then run:
+| Method | Endpoint               | Description              | Authorization |
+| ------ | ---------------------- | ------------------------ | ------------- |
+| POST   | `/api/categories`      | Tạo category mới         | User/Admin    |
+| GET    | `/api/categories`      | Lấy danh sách categories | User/Admin    |
+| GET    | `/api/categories/{id}` | Lấy chi tiết category    | User/Admin    |
+| PUT    | `/api/categories/{id}` | Cập nhật category        | User/Admin    |
+| DELETE | `/api/categories/{id}` | Xóa category             | User/Admin    |
 
-```sh
-docker compose -f src/main/docker/app.yml up -d
-```
+### Tag Management APIs
 
-For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the Docker Compose sub-generator (`jhipster docker-compose`), which is able to generate Docker configurations for one or several JHipster applications.
+| Method | Endpoint                | Description        | Authorization |
+| ------ | ----------------------- | ------------------ | ------------- |
+| POST   | `/api/tags`             | Tạo tag mới        | User/Admin    |
+| GET    | `/api/tags`             | Lấy danh sách tags | User/Admin    |
+| GET    | `/api/tags/{id}`        | Lấy chi tiết tag   | User/Admin    |
+| GET    | `/api/tags/name/{name}` | Tìm tag theo tên   | User/Admin    |
+| PUT    | `/api/tags/{id}`        | Cập nhật tag       | User/Admin    |
+| DELETE | `/api/tags/{id}`        | Xóa tag            | User/Admin    |
 
-## Continuous Integration (optional)
+### Subtask Management APIs
 
-To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
+| Method | Endpoint                      | Description               | Authorization |
+| ------ | ----------------------------- | ------------------------- | ------------- |
+| POST   | `/api/subtasks`               | Tạo subtask mới           | User/Admin    |
+| GET    | `/api/subtasks/{id}`          | Lấy chi tiết subtask      | User/Admin    |
+| PUT    | `/api/subtasks/{id}`          | Cập nhật subtask          | User/Admin    |
+| DELETE | `/api/subtasks/{id}`          | Xóa subtask               | User/Admin    |
+| GET    | `/api/subtasks/task/{taskId}` | Lấy subtasks theo task ID | User/Admin    |
 
-[JHipster Homepage and latest documentation]: https://www.jhipster.tech
-[JHipster 8.11.0 archive]: https://www.jhipster.tech/documentation-archive/v8.11.0
-[Using JHipster in development]: https://www.jhipster.tech/documentation-archive/v8.11.0/development/
-[Using Docker and Docker-Compose]: https://www.jhipster.tech/documentation-archive/v8.11.0/docker-compose
-[Using JHipster in production]: https://www.jhipster.tech/documentation-archive/v8.11.0/production/
-[Running tests page]: https://www.jhipster.tech/documentation-archive/v8.11.0/running-tests/
-[Code quality page]: https://www.jhipster.tech/documentation-archive/v8.11.0/code-quality/
-[Setting up Continuous Integration]: https://www.jhipster.tech/documentation-archive/v8.11.0/setting-up-ci/
-[Node.js]: https://nodejs.org/
-[NPM]: https://www.npmjs.com/
-[Webpack]: https://webpack.github.io/
-[BrowserSync]: https://www.browsersync.io/
-[Jest]: https://jestjs.io
-[Leaflet]: https://leafletjs.com/
-[DefinitelyTyped]: https://definitelytyped.org/
+### Comment Management APIs
+
+| Method | Endpoint                      | Description               | Authorization |
+| ------ | ----------------------------- | ------------------------- | ------------- |
+| POST   | `/api/comments`               | Tạo comment mới           | User/Admin    |
+| GET    | `/api/comments/{id}`          | Lấy chi tiết comment      | User/Admin    |
+| PUT    | `/api/comments/{id}`          | Cập nhật comment          | User/Admin    |
+| DELETE | `/api/comments/{id}`          | Xóa comment               | User/Admin    |
+| GET    | `/api/comments/task/{taskId}` | Lấy comments theo task ID | User/Admin    |
+
+### Roles & Permissions
+
+- **ROLE_ADMIN**: Quản lý users, có quyền truy cập tất cả endpoints
+- **ROLE_USER**: Quản lý tasks, categories, tags, comments của mình
+
+## 📊 Business Logic
+
+### Task Lifecycle
+
+1. **Tạo Task**: User tạo task mới với title, description, priority, due date
+2. **Phân loại**: Gán category và tags cho task
+3. **Chia nhỏ**: Tạo subtasks để chia nhỏ công việc
+4. **Theo dõi**: Cập nhật status (PENDING → IN_PROGRESS → COMPLETED)
+5. **Thảo luận**: Thêm comments để trao đổi
+6. **Hoàn thành**: Đánh dấu task hoàn thành hoặc hủy bỏ
+
+### Priority Management
+
+- **URGENT**: Cần xử lý ngay lập tức
+- **HIGH**: Ưu tiên cao
+- **MEDIUM**: Ưu tiên trung bình (default)
+- **LOW**: Ưu tiên thấp
+
+### Status Tracking
+
+- **PENDING**: Chờ xử lý (default)
+- **IN_PROGRESS**: Đang thực hiện
+- **COMPLETED**: Đã hoàn thành
+- **CANCELLED**: Đã hủy bỏ

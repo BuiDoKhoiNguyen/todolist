@@ -27,10 +27,12 @@ public class Comment extends AbstractAuditingEntity<Long> implements Serializabl
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "comments" }, allowSetters = true)
+    @JoinColumn(name = "task_id")
+    @JsonIgnoreProperties(value = { "category", "assignedUser", "subtasks", "comments", "tags" }, allowSetters = true)
     private Task task;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
     private User user;
 }

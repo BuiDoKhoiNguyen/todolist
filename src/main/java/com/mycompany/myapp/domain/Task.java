@@ -1,5 +1,6 @@
 package com.mycompany.myapp.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mycompany.myapp.domain.enums.TodoPriority;
 import com.mycompany.myapp.domain.enums.TodoStatus;
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -41,4 +44,32 @@ public class Task extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Column(name = "due_date")
     private Instant dueDate;
+
+    // Task N:1 Category
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties(value = { "tasks" }, allowSetters = true)
+    private Category category;
+
+    // Task N:1 User (assigned user)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_user_id")
+    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
+    private User assignedUser;
+
+    // Task 1:N Subtask
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties(value = { "task" }, allowSetters = true)
+    private Set<Subtask> subtasks = new HashSet<>();
+
+    // Task 1:N Comment
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties(value = { "task", "user" }, allowSetters = true)
+    private Set<Comment> comments = new HashSet<>();
+
+    // Task N:M Tag
+    @ManyToMany
+    @JoinTable(name = "task_tag", joinColumns = @JoinColumn(name = "task_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JsonIgnoreProperties(value = { "tasks" }, allowSetters = true)
+    private Set<Tag> tags = new HashSet<>();
 }

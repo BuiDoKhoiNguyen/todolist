@@ -32,6 +32,7 @@ public class Subtask extends AbstractAuditingEntity<Long> implements Serializabl
     private TodoStatus status = TodoStatus.PENDING;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "subtasks" }, allowSetters = true)
+    @JoinColumn(name = "task_id")
+    @JsonIgnoreProperties(value = { "category", "assignedUser", "subtasks", "comments", "tags" }, allowSetters = true)
     private Task task;
 }
